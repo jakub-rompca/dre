@@ -3,5 +3,5 @@
 # System generated files
 .DS_Store
 # Projects are to be ignored
-project/*
-!project/.gitignore
+projects/*
+!projects/.gitignore
