@@ -1,10 +1,25 @@
-FROM php:7.4-fpm
-WORKDIR "/application"
+FROM php:fpm-alpine
 
-# Fix debconf warnings upon build
-ARG DEBIAN_FRONTEND=noninteractive
+RUN apk update \
+    && apk add  --no-cache git mysql-client curl libmcrypt libmcrypt-dev openssh-client icu-dev \
+    libxml2-dev freetype-dev libpng-dev libjpeg-turbo-dev libzip-dev g++ make autoconf \
+    && docker-php-source extract \
+    && pecl install xdebug redis \
+    && docker-php-ext-enable xdebug redis \
+    && docker-php-source delete \
+    && docker-php-ext-install pdo_mysql soap intl zip \
+    && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_handler=dbgp" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_connect_back=0" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.idekey=jrompca_darwin" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && rm -rf /tmp/*
 
-# Install selected extensions and other stuff
-RUN apt-get update \
-    && apt-get -y --no-install-recommends install  php-memcached php7.4-mysql php-xdebug php7.4-bz2 php7.4-gd php7.4-imap \
-    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+
+EXPOSE 9000
