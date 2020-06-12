@@ -22,7 +22,7 @@ services:
             - "2137:80"
     php-fpm:
         build:
-            context: ./php-fpm
+            context: ./phpdocker/php-fpm
         depends_on:
             - database
         container_name: project-php-fpm
