@@ -5,3 +5,6 @@
 # Projects are to be ignored
 projects/*
 !projects/.gitignore
+# Env files
+.env
+.env.*
